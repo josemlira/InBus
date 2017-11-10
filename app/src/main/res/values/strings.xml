@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">InBus</string>
+    <string name="button_connect">Conectar</string>
+    <string name="button_goback">Volver</string>
+    <string name="button_signal">Enviar señal</string>
+    <string name="textView2">Bienvenido a InBus</string>
+    <string name="button_test">Versión Prueba</string>
+    <string name="button_app">Versión Final</string>
+</resources>
