@@ -8,7 +8,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -18,11 +17,9 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity {
 
     Button bconnect;
-    BluetoothAdapter Adapter = BluetoothAdapter.getDefaultAdapter();
-    ArrayAdapter pairedDevices; //Modificar
+    private BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
     boolean enableBT = false;
-    int REQUEST_ENABLE_BT = 1;
-    private ArrayAdapter pairedDevicesArray;
+    private int REQUEST_ENABLE_BT = 1;
     public static String EXTRA_DEVICE_ADDRESS = "device_address";
 
     @Override
@@ -40,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
                     // Mostramos los dispositivos vinculados, luego al seleccionar uno avanzamos a la sgte pagina
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle("Selecciona un dispositivo");
-                    Set<BluetoothDevice> pairedDevices = Adapter.getBondedDevices();
+                    Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
                     final CharSequence[] items = new CharSequence[pairedDevices.size()];
                     if (pairedDevices.size() > 0) {
                         int cont = 0;
@@ -83,11 +80,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void VerificarBT() {
-        if (Adapter == null) {
+        if (btAdapter == null) {
             Toast alerta = Toast.makeText(getApplicationContext(), "El dispositivo no es compatible con bluetooth", Toast.LENGTH_LONG);
             alerta.show();
         } else {
-            if (!Adapter.isEnabled()) {
+            if (!btAdapter.isEnabled()) {
                 Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
             } else {
