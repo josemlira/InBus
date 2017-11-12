@@ -26,9 +26,15 @@ public class Intermediate extends AppCompatActivity {
                 finish();
             }
         });
+        //Apretar el bapp y cambiar de layout
+        bapp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent go = new Intent(Intermediate.this, Request.class);
+                startActivity(go);
+                finish();
+            }
+        });
 
-
-
-        // Por ahora el bapp no hace nada
     }
 }

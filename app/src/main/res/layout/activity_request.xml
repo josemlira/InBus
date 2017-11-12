@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimary">
+
+    <EditText
+        android:id="@+id/query_micro"
+        android:layout_width="211dp"
+        android:layout_height="73dp"
+        android:layout_marginBottom="250dp"
+        android:layout_marginEnd="75dp"
+        android:layout_marginTop="45dp"
+        android:background="@color/ic_inbus_background"
+        android:ems="10"
+        android:inputType="none|textPersonName"
+        android:singleLine="true"
+        android:text="@string/query_micro"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.521"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_query" />
+
+    <TextView
+        android:id="@+id/text_query"
+        android:layout_width="267dp"
+        android:layout_height="43dp"
+        android:layout_marginBottom="45dp"
+        android:layout_marginEnd="77dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="100dp"
+        android:text="@string/text_query"
+        android:textColor="@color/ic_inbus_background"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/query_micro"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="spread"
+        tools:text="@string/text_query" />
+
+    <Button
+        android:id="@+id/button_gorecorrido"
+        android:layout_width="47dp"
+        android:layout_height="41dp"
+        android:layout_marginBottom="251dp"
+        android:layout_marginStart="34dp"
+        android:layout_marginTop="91dp"
+        android:text="@string/button_gorecorrido"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/query_micro"
+        app:layout_constraintTop_toBottomOf="@+id/text_query" />
+
+</android.support.constraint.ConstraintLayout>
