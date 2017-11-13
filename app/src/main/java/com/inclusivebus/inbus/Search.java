@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Adapter;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -43,21 +42,21 @@ public class Search extends AppCompatActivity {
         bsignal = (Button) findViewById(R.id.button_signal);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         VerificarBT();
-        /*
+
         bgoback.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent go = new Intent(Search.this, Intermediate.class);
+                go.putExtra(MainActivity.EXTRA_DEVICE_ADDRESS, address);
                 startActivity(go);
                 finish();
             }
         });
-        */
+
         bsignal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SendMessage thread = new SendMessage(MyConexionBT);
-                thread.start();
+                MyConexionBT.write("A");
             }
         });
     }
@@ -71,6 +70,7 @@ public class Search extends AppCompatActivity {
         Intent intent = getIntent();
         address = intent.getStringExtra(MainActivity.EXTRA_DEVICE_ADDRESS);
         BluetoothDevice device = btAdapter.getRemoteDevice(address);
+
         try {
             btSocket = createBluetoothSocket(device);
         } catch (IOException e) {
@@ -94,7 +94,6 @@ public class Search extends AppCompatActivity {
         } catch (IOException e) { }
     }
 
-
     private void VerificarBT() {
         if (btAdapter == null) {
             Toast.makeText(getBaseContext(), "El dispositivo no es compatible con bluetooth", Toast.LENGTH_LONG).show();
@@ -106,7 +105,8 @@ public class Search extends AppCompatActivity {
         }
     }
 
-
+// PRIMERO PROBAR QUE FUNCIONE LA VIBRACION
+/*
     private class SendMessage extends Thread {
 
         private final ConnectedThread writter;
@@ -126,7 +126,7 @@ public class Search extends AppCompatActivity {
             } catch (InterruptedException e) { }
         }
     }
-
+*/
     private class ConnectedThread extends Thread {
 
         private final InputStream mmInStream;
