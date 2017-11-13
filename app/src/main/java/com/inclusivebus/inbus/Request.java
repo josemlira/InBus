@@ -26,6 +26,8 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
+
 import javax.net.ssl.HttpsURLConnection;
 
 public class Request extends AppCompatActivity {
@@ -129,7 +131,13 @@ public class Request extends AppCompatActivity {
         String resultado_paradero;
         GetRequest getreq = new GetRequest();
 
-        resultado_paradero = getreq.execute(URL_paradero).get();
+        try {
+            resultado_paradero = getreq.execute(URL_paradero).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
 
     };
@@ -139,7 +147,7 @@ public class Request extends AppCompatActivity {
     };
 }
 
-public class GetRequest extends AsyncTask<String, Void, String>
+class GetRequest extends AsyncTask<String, Void, String>
 {
     public static final String req_meth = "GET";
     public static final int read_to = 15000;
