@@ -18,6 +18,7 @@
         android:inputType="none|textPersonName"
         android:singleLine="true"
         android:text="@string/query_micro"
+        android:textAlignment="center"
         android:textColor="@android:color/darker_gray"
         android:textSize="30sp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -56,5 +57,36 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/query_micro"
         app:layout_constraintTop_toBottomOf="@+id/text_query" />
+
+    <Button
+        android:id="@+id/button_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="52dp"
+        android:layout_marginEnd="148dp"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="40dp"
+        android:text="@string/button_back"
+        app:layout_constraintBottom_toTopOf="@+id/tv_loc"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/query_micro" />
+
+    <TextView
+        android:id="@+id/tv_loc"
+        android:layout_width="281dp"
+        android:layout_height="44dp"
+        android:layout_marginBottom="51dp"
+        android:layout_marginEnd="52dp"
+        android:layout_marginStart="51dp"
+        android:layout_marginTop="52dp"
+        android:text="@string/tv_loc"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_back" />
 
 </android.support.constraint.ConstraintLayout>

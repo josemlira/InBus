@@ -19,6 +19,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -40,25 +41,42 @@ public class Request extends AppCompatActivity {
     String URL_paradero;
     String URL_micro;
     String cod_paradero;
+    String micro;
+    TextView tv_loc;
+    Button bback;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_request);
+        getLocation();
 
         txtmicro = (EditText) findViewById(R.id.query_micro);
         bgorec = (Button) findViewById(R.id.button_gorecorrido);
+        bback = (Button) findViewById(R.id.button_back);
+        tv_loc = (TextView) findViewById(R.id.tv_loc)
 
         //boton para leer la micro
         bgorec.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String micro;
                 micro = txtmicro.getText().toString();
             }
         });
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        //boton para volver
+        bback.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent go = new Intent(Search.this, Intermediate.class);
+                go.putExtra(MainActivity.EXTRA_DEVICE_ADDRESS, address);
+                startActivity(go);
+                finish();
+            }
+        });
 
     }
     //probar que esta activada la localización
@@ -124,12 +142,12 @@ public class Request extends AppCompatActivity {
             }
         };
 
-    public void getLocation(){
+    public String getLocation(){
         String lat = String.valueOf(latitudeNetwork);
         String lon = String.valueOf(longitudeNetwork);
         URL_paradero = "http://www.transantiago.cl/restservice/rest/getpuntoparada?lat=" + lat +
                 "&lon=" + lon + "&bip=1";
-        String resultado_paradero;
+        String resultado_paradero = null;
         GetRequest getreq = new GetRequest();
 
         try {
@@ -141,6 +159,8 @@ public class Request extends AppCompatActivity {
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
+
+        return resultado_paradero;
 
 
     };

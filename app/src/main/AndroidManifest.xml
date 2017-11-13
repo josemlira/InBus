@@ -24,7 +24,8 @@
         </activity>
         <activity android:name=".Search" />
         <activity android:name=".Intermediate" />
-        <activity android:name=".Request"/>
+        <activity android:name=".Request" />
+        <activity android:name=".Final_Test"></activity>
     </application>
 
 </manifest>

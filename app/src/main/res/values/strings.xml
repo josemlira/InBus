@@ -9,5 +9,7 @@
     <string name="query_micro">Recorrido</string>
     <string name="text_query">Ingrese el recorrido: </string>
     <string name="button_gorecorrido">Ok</string>
+    <string name="tv_loc"> </string>
+    <string name="button_back">Volver</string>
 
 </resources>
