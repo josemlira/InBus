@@ -5,6 +5,7 @@ package com.inclusivebus.inbus;
  */
 
 
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -37,6 +38,7 @@ public class Request extends AppCompatActivity {
     Button bgorec;
     String URL_paradero;
     String URL_micro;
+    String cod_paradero;
 
 
     @Override
@@ -122,7 +124,14 @@ public class Request extends AppCompatActivity {
         };
 
     public void getLocation(){
+        String lat = String.valueOf(latitudeNetwork);
+        String lon = String.valueOf(longitudeNetwork);
+        URL_paradero = "http://www.transantiago.cl/restservice/rest/getpuntoparada?lat=" + lat +
+                "&lon=" + lon + "&bip=1";
+        String resultado_paradero;
+        GetRequest getreq = new GetRequest();
 
+        resultado_paradero = getreq.execute(URL_paradero).get();
 
     };
 
@@ -130,3 +139,54 @@ public class Request extends AppCompatActivity {
 
     };
 }
+
+public class GetRequest extends AsyncTask<String, Void, String>
+{
+    public static final String req_meth = "GET";
+    public static final int read_to = 15000;
+    public static final int connect_to = 15000;
+
+    @Override
+    protected String doInBackground(String... params){
+        String stringurl = params[0];
+        String result;
+        String inputLine;
+
+        try {
+            URL myUrl = new URL(stringurl);
+            HttpURLConnection connection = (HttpURLConnection) myUrl.openConnection();
+
+            connection.setRequestMethod(req_meth);
+            connection.setReadTimeout(read_to);
+            connection.setConnectTimeout(connect_to);
+
+            connection.connect();
+
+            InputStreamReader streamReader = new InputStreamReader(connection.getInputStream());
+            BufferedReader reader = new BufferedReader(streamReader);
+            StringBuilder stringBuilder = new StringBuilder();
+
+            while((inputLine = reader.readLine()) != null){
+                stringBuilder.append(inputLine);
+            }
+
+            reader.close();
+            streamReader.close();
+
+            result = stringBuilder.toString();
+        }
+
+        catch (IOExeption e){
+            e.printStackTrace();
+            result = null;
+        }
+
+    }
+
+    @Override
+    protected void onPostExecute(String result){
+        super.onPostExecute(result);
+    }
+
+        }
+
