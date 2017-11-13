@@ -57,7 +57,11 @@ public class Search extends AppCompatActivity {
         bsignal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MyConexionBT.write("A");
+                try {
+                    MyConexionBT.doble();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -165,6 +169,15 @@ public class Search extends AppCompatActivity {
             } catch (IOException e) {
                 Toast.makeText(getBaseContext(), "La conexión falló", Toast.LENGTH_LONG).show();
                 finish();
+            }
+        }
+
+        public void doble() throws InterruptedException {
+            for(int i = 0; i<2; i++){
+                this.write("A");
+                this.sleep(500);
+                this.write("B");
+                this.sleep(500);
             }
         }
     }
