@@ -34,7 +34,8 @@ import javax.net.ssl.HttpsURLConnection;
 public class Request extends AppCompatActivity {
 
     LocationManager locationManager;
-    double longitudeNetwork, latitudeNetwork;
+    double longitudeNetwork = 0.0;
+    double latitudeNetwork = -3.3;
     EditText txtmicro;
     private static String address = null;
     Button bgorec;
@@ -136,7 +137,7 @@ public class Request extends AppCompatActivity {
         public void onLocationChanged(Location location) {
             longitudeNetwork = location.getLongitude();
             latitudeNetwork = location.getLatitude();
-            //Toast.makeText(getBaseContext(), String.valueOf(latitudeNetwork), Toast.LENGTH_LONG).show
+
             /*
             //no se si este codigo nos sirve a nosotros, los override de abajo tampoco
             runOnUiThread(new Runnable() {
