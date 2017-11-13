@@ -11,18 +11,16 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
+
+import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
@@ -133,6 +131,7 @@ public class Request extends AppCompatActivity {
 
         resultado_paradero = getreq.execute(URL_paradero).get();
 
+
     };
 
     public void searchMicro(){
@@ -176,11 +175,12 @@ public class GetRequest extends AsyncTask<String, Void, String>
             result = stringBuilder.toString();
         }
 
-        catch (IOExeption e){
+        catch (IOException e){
             e.printStackTrace();
             result = null;
         }
 
+    return result;
     }
 
     @Override
