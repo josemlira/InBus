@@ -134,6 +134,8 @@ public class Request extends AppCompatActivity {
 
         try {
             resultado_paradero = getreq.execute(URL_paradero).get();
+            Toast.makeText(getBaseContext(),resultado_paradero,Toast.LENGTH_LONG).show();
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -146,57 +148,57 @@ public class Request extends AppCompatActivity {
     public void searchMicro(){
 
     };
-}
 
-class GetRequest extends AsyncTask<String, Void, String>
-{
-    private static final String req_meth = "GET";
-    private static final int read_to = 15000;
-    private static final int connect_to = 15000;
+    public static class GetRequest extends AsyncTask<String, Void, String>
+    {
+        private static final String req_meth = "GET";
+        private static final int read_to = 15000;
+        private static final int connect_to = 15000;
 
-    @Override
-    protected String doInBackground(String... params){
-        String stringurl = params[0];
-        String result;
-        String inputLine;
+        @Override
+        protected String doInBackground(String... params){
+            String stringurl = params[0];
+            String result;
+            String inputLine;
 
-        try {
-            URL myUrl = new URL(stringurl);
-            HttpURLConnection connection = (HttpURLConnection) myUrl.openConnection();
+            try {
+                URL myUrl = new URL(stringurl);
+                HttpURLConnection connection = (HttpURLConnection) myUrl.openConnection();
 
-            connection.setRequestMethod(req_meth);
-            connection.setReadTimeout(read_to);
-            connection.setConnectTimeout(connect_to);
+                connection.setRequestMethod(req_meth);
+                connection.setReadTimeout(read_to);
+                connection.setConnectTimeout(connect_to);
 
-            connection.connect();
+                connection.connect();
 
-            InputStreamReader streamReader = new InputStreamReader(connection.getInputStream());
-            BufferedReader reader = new BufferedReader(streamReader);
-            StringBuilder stringBuilder = new StringBuilder();
+                InputStreamReader streamReader = new InputStreamReader(connection.getInputStream());
+                BufferedReader reader = new BufferedReader(streamReader);
+                StringBuilder stringBuilder = new StringBuilder();
 
-            while((inputLine = reader.readLine()) != null){
-                stringBuilder.append(inputLine);
+                while((inputLine = reader.readLine()) != null){
+                    stringBuilder.append(inputLine);
+                }
+
+                reader.close();
+                streamReader.close();
+
+                result = stringBuilder.toString();
             }
 
-            reader.close();
-            streamReader.close();
+            catch (IOException e){
+                e.printStackTrace();
+                result = null;
+            }
 
-            result = stringBuilder.toString();
-            Toast.makeText(getBaseContext(), result, Toast.LENGTH_LONG).show();
+            return result;
         }
 
-        catch (IOException e){
-            e.printStackTrace();
-            result = null;
+        @Override
+        protected void onPostExecute(String result){
+            super.onPostExecute(result);
         }
 
-    return result;
     }
+}
 
-    @Override
-    protected void onPostExecute(String result){
-        super.onPostExecute(result);
-    }
-
-        }
 
