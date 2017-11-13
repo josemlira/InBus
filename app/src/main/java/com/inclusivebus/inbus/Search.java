@@ -43,6 +43,7 @@ public class Search extends AppCompatActivity {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         VerificarBT();
 
+
         bgoback.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

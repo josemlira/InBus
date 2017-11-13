@@ -37,6 +37,7 @@ public class Request extends AppCompatActivity {
     LocationManager locationManager;
     double longitudeNetwork, latitudeNetwork;
     EditText txtmicro;
+    private static String address = null;
     Button bgorec;
     String URL_paradero;
     String URL_micro;
@@ -56,7 +57,9 @@ public class Request extends AppCompatActivity {
         txtmicro = (EditText) findViewById(R.id.query_micro);
         bgorec = (Button) findViewById(R.id.button_gorecorrido);
         bback = (Button) findViewById(R.id.button_back);
-        tv_loc = (TextView) findViewById(R.id.tv_loc)
+        tv_loc = (TextView) findViewById(R.id.tv_loc);
+        Intent intent = getIntent();
+        address = intent.getStringExtra(MainActivity.EXTRA_DEVICE_ADDRESS);
 
         //boton para leer la micro
         bgorec.setOnClickListener(new View.OnClickListener() {
@@ -71,7 +74,7 @@ public class Request extends AppCompatActivity {
         bback.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent go = new Intent(Search.this, Intermediate.class);
+                Intent go = new Intent(Request.this, Intermediate.class);
                 go.putExtra(MainActivity.EXTRA_DEVICE_ADDRESS, address);
                 startActivity(go);
                 finish();
