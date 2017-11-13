@@ -50,7 +50,6 @@ public class Request extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_request);
-        getLocation();
 
         txtmicro = (EditText) findViewById(R.id.query_micro);
         bgorec = (Button) findViewById(R.id.button_gorecorrido);
@@ -58,6 +57,8 @@ public class Request extends AppCompatActivity {
         tv_loc = (TextView) findViewById(R.id.tv_loc);
         Intent intent = getIntent();
         address = intent.getStringExtra(MainActivity.EXTRA_DEVICE_ADDRESS);
+        toggleNetworkUpdates();
+        getLocation();
 
         //boton para leer la micro
         bgorec.setOnClickListener(new View.OnClickListener() {
@@ -79,7 +80,7 @@ public class Request extends AppCompatActivity {
                 finish();
             }
         });
-        toggleNetworkUpdates();
+
 
     }
 
@@ -94,8 +95,7 @@ public class Request extends AppCompatActivity {
     private void showAlert() {
         final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle("Enable Location")
-                .setMessage("Su ubicación esta desactivada.\npor favor active su ubicación " +
-                        "usa esta app")
+                .setMessage("Su ubicación esta desactivada.\npor favor active su ubicación ")
                 .setPositiveButton("Configuración de ubicación", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface paramDialogInterface, int paramInt) {
