@@ -44,11 +44,11 @@ public class Request extends AppCompatActivity {
     private static String address = null;
     Button bgorec;
     String URL_paradero;
-    String URL_micro;
-    String cod_paradero;
     String micro;
     TextView tv_loc;
     Button bback;
+    public String parada_cercana;
+    public double minima_distacia = 999999999.9;
 
 
     @Override
@@ -60,6 +60,7 @@ public class Request extends AppCompatActivity {
         bgorec = (Button) findViewById(R.id.button_gorecorrido);
         bback = (Button) findViewById(R.id.button_back);
         tv_loc = (TextView) findViewById(R.id.tv_loc);
+
         Intent intent = getIntent();
         address = intent.getStringExtra(MainActivity.EXTRA_DEVICE_ADDRESS);
 
@@ -131,7 +132,7 @@ public class Request extends AppCompatActivity {
                         LocationManager.NETWORK_PROVIDER, 20 * 1000, 10, locationListenerNetwork);
                 //Toast.makeText(this, "Network provider started running", Toast.LENGTH_LONG).show();
                 //String lat = String.valueOf(latitudeNetwork);
-                //Toast.makeText(getBaseContext(), lat, Toast.LENGTH_LONG).show();
+                Toast.makeText(getBaseContext(), parada_cercana, Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -143,7 +144,26 @@ public class Request extends AppCompatActivity {
             latitudeNetwork = location.getLatitude();
             JSONArray result;
             result = getLocation();
-            Toast.makeText(getBaseContext(), result.toString(), Toast.LENGTH_LONG).show();
+            for (int i =0; i < result.length(); i++){
+                JSONObject paradero = null;
+                try {
+                    paradero = result.getJSONObject(i);
+                    double dist = paradero.getDouble("distancia");
+                    if(dist < minima_distacia){
+                        minima_distacia = dist;
+                        parada_cercana = paradero.getString("cod");
+
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+
+
+            }
+            //Toast.makeText(getBaseContext(), result.toString(), Toast.LENGTH_LONG).show();
+
 
             /*
             //no se si este codigo nos sirve a nosotros, los override de abajo tampoco
