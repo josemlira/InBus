@@ -1,11 +1,9 @@
 package com.inclusivebus.inbus;
 
-/**
- * Created by leylavillarroel on 11/12/17.
- */
 
-
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -14,6 +12,7 @@ import android.widget.EditText;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.Manifest;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -47,9 +46,8 @@ public class Request extends AppCompatActivity {
     Button bback;
 
 
-
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_request);
         getLocation();
@@ -70,6 +68,7 @@ public class Request extends AppCompatActivity {
         });
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+
         //boton para volver
         bback.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,8 +79,10 @@ public class Request extends AppCompatActivity {
                 finish();
             }
         });
+        toggleNetworkUpdates();
 
     }
+
     //probar que esta activada la localización
     private boolean checkLocation() {
         if (!isLocationEnabled())
@@ -113,6 +114,19 @@ public class Request extends AppCompatActivity {
     //método que detecta si está activa la ubicación
     private boolean isLocationEnabled() {
         return locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+    }
+
+    public void toggleNetworkUpdates() {
+        if (!checkLocation())
+            return;
+        else {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            } else {
+                locationManager.requestLocationUpdates(
+                        LocationManager.NETWORK_PROVIDER, 20 * 1000, 10, locationListenerNetwork);
+                Toast.makeText(this, "Network provider started running", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     //método que busca lat y lon
