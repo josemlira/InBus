@@ -57,8 +57,6 @@ public class Request extends AppCompatActivity {
         tv_loc = (TextView) findViewById(R.id.tv_loc);
         Intent intent = getIntent();
         address = intent.getStringExtra(MainActivity.EXTRA_DEVICE_ADDRESS);
-        toggleNetworkUpdates();
-        getLocation();
 
         //boton para leer la micro
         bgorec.setOnClickListener(new View.OnClickListener() {
@@ -68,6 +66,8 @@ public class Request extends AppCompatActivity {
             }
         });
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        toggleNetworkUpdates();
+        getLocation();
 
 
         //boton para volver
@@ -124,7 +124,9 @@ public class Request extends AppCompatActivity {
             } else {
                 locationManager.requestLocationUpdates(
                         LocationManager.NETWORK_PROVIDER, 20 * 1000, 10, locationListenerNetwork);
-                Toast.makeText(this, "Network provider started running", Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, "Network provider started running", Toast.LENGTH_LONG).show();
+                String lat = String.valueOf(latitudeNetwork);
+                Toast.makeText(getBaseContext(), lat, Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -134,7 +136,7 @@ public class Request extends AppCompatActivity {
         public void onLocationChanged(Location location) {
             longitudeNetwork = location.getLongitude();
             latitudeNetwork = location.getLatitude();
-
+            //Toast.makeText(getBaseContext(), String.valueOf(latitudeNetwork), Toast.LENGTH_LONG).show
             /*
             //no se si este codigo nos sirve a nosotros, los override de abajo tampoco
             runOnUiThread(new Runnable() {
