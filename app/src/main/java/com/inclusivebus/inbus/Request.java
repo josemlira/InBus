@@ -21,6 +21,10 @@ import android.support.v7.app.AlertDialog;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -68,7 +72,7 @@ public class Request extends AppCompatActivity {
         });
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         toggleNetworkUpdates();
-        getLocation();
+        //getLocation();
 
 
         //boton para volver
@@ -126,8 +130,8 @@ public class Request extends AppCompatActivity {
                 locationManager.requestLocationUpdates(
                         LocationManager.NETWORK_PROVIDER, 20 * 1000, 10, locationListenerNetwork);
                 //Toast.makeText(this, "Network provider started running", Toast.LENGTH_LONG).show();
-                String lat = String.valueOf(latitudeNetwork);
-                Toast.makeText(getBaseContext(), lat, Toast.LENGTH_LONG).show();
+                //String lat = String.valueOf(latitudeNetwork);
+                //Toast.makeText(getBaseContext(), lat, Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -137,6 +141,9 @@ public class Request extends AppCompatActivity {
         public void onLocationChanged(Location location) {
             longitudeNetwork = location.getLongitude();
             latitudeNetwork = location.getLatitude();
+            JSONArray result;
+            result = getLocation();
+            Toast.makeText(getBaseContext(), result.toString(), Toast.LENGTH_LONG).show();
 
             /*
             //no se si este codigo nos sirve a nosotros, los override de abajo tampoco
@@ -162,25 +169,31 @@ public class Request extends AppCompatActivity {
             }
         };
 
-    public String getLocation(){
+    public JSONArray getLocation(){
         String lat = String.valueOf(latitudeNetwork);
         String lon = String.valueOf(longitudeNetwork);
         URL_paradero = "http://www.transantiago.cl/restservice/rest/getpuntoparada?lat=" + lat +
                 "&lon=" + lon + "&bip=1";
         String resultado_paradero = null;
         GetRequest getreq = new GetRequest();
+        JSONArray json;
 
         try {
             resultado_paradero = getreq.execute(URL_paradero).get();
-            Toast.makeText(getBaseContext(),resultado_paradero,Toast.LENGTH_LONG).show();
+            //Toast.makeText(getBaseContext(),resultado_paradero,Toast.LENGTH_LONG).show();
 
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-
-        return resultado_paradero;
+        try {
+            json = new JSONArray(resultado_paradero);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            json = null;
+        }
+        return json;
 
 
     };
