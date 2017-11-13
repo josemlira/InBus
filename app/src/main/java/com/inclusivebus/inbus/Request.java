@@ -19,6 +19,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -149,9 +150,9 @@ public class Request extends AppCompatActivity {
 
 class GetRequest extends AsyncTask<String, Void, String>
 {
-    public static final String req_meth = "GET";
-    public static final int read_to = 15000;
-    public static final int connect_to = 15000;
+    private static final String req_meth = "GET";
+    private static final int read_to = 15000;
+    private static final int connect_to = 15000;
 
     @Override
     protected String doInBackground(String... params){
@@ -181,6 +182,7 @@ class GetRequest extends AsyncTask<String, Void, String>
             streamReader.close();
 
             result = stringBuilder.toString();
+            Toast.makeText(getBaseContext(), result, Toast.LENGTH_LONG).show();
         }
 
         catch (IOException e){
