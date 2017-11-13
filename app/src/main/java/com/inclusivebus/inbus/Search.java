@@ -110,28 +110,7 @@ public class Search extends AppCompatActivity {
         }
     }
 
-// PRIMERO PROBAR QUE FUNCIONE LA VIBRACION
-/*
-    private class SendMessage extends Thread {
 
-        private final ConnectedThread writter;
-
-        public SendMessage(ConnectedThread thr) {
-            writter = thr;
-        }
-
-        public void run() {
-            try {
-                for (int i = 0; i < 2; i++) {
-                    writter.write("A");
-                    this.sleep(500);
-                    writter.write("B");
-                    this.sleep(500);
-                }
-            } catch (InterruptedException e) { }
-        }
-    }
-*/
     private class ConnectedThread extends Thread {
 
         private final InputStream mmInStream;

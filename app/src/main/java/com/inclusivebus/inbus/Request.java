@@ -1,8 +1,12 @@
 package com.inclusivebus.inbus;
 
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -28,9 +32,12 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -47,8 +54,16 @@ public class Request extends AppCompatActivity {
     String micro;
     TextView tv_loc;
     Button bback;
+    private ConnectedThread MyConexionBT;
     public String parada_cercana;
     public double minima_distacia = 999999999.9;
+    Handler bluetoothIn;
+    final int handlerState = 0;
+    private static final UUID BTMODULEUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private BluetoothAdapter btAdapter = null;
+    private BluetoothSocket btSocket = null;
+    private int REQUEST_ENABLE_BT = 1;
+    Consultar Cons;
 
 
     @Override
@@ -60,15 +75,17 @@ public class Request extends AppCompatActivity {
         bgorec = (Button) findViewById(R.id.button_gorecorrido);
         bback = (Button) findViewById(R.id.button_back);
         tv_loc = (TextView) findViewById(R.id.tv_loc);
-
-        Intent intent = getIntent();
-        address = intent.getStringExtra(MainActivity.EXTRA_DEVICE_ADDRESS);
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        VerificarBT();
 
         //boton para leer la micro
         bgorec.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 micro = txtmicro.getText().toString();
+                Cons = new Consultar(micro);
+                Cons.start();
+                txtmicro.setText("");
             }
         });
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -89,6 +106,35 @@ public class Request extends AppCompatActivity {
 
 
     }
+
+    public void onResume() {
+        super.onResume();
+        Intent intent = getIntent();
+        address = intent.getStringExtra(MainActivity.EXTRA_DEVICE_ADDRESS);
+        BluetoothDevice device = btAdapter.getRemoteDevice(address);
+        try {
+            btSocket = createBluetoothSocket(device);
+        } catch (IOException e) {
+            Toast.makeText(getBaseContext(), "Hubo un problema", Toast.LENGTH_LONG).show();
+        }
+        try {
+            btSocket.connect();
+        } catch (IOException e) {
+            try {
+                btSocket.close();
+            } catch (IOException e2) { }
+        }
+        MyConexionBT = new ConnectedThread(btSocket);
+        MyConexionBT.start();
+    }
+
+    public void onPause() {
+        super.onPause();
+        try {
+            btSocket.close();
+        } catch (IOException e) { }
+    }
+
 
     //probar que esta activada la localización
     private boolean checkLocation() {
@@ -144,6 +190,7 @@ public class Request extends AppCompatActivity {
             latitudeNetwork = location.getLatitude();
             JSONArray result;
             result = getLocation();
+            String aux = "";
             for (int i =0; i < result.length(); i++){
                 JSONObject paradero = null;
                 try {
@@ -151,20 +198,15 @@ public class Request extends AppCompatActivity {
                     double dist = paradero.getDouble("distancia");
                     if(dist < minima_distacia){
                         minima_distacia = dist;
-                        parada_cercana = paradero.getString("cod");
+                        aux = paradero.getString("cod");
 
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
-
-
-
             }
-            //Toast.makeText(getBaseContext(), result.toString(), Toast.LENGTH_LONG).show();
-
-
+            parada_cercana = aux;
+            //Toast.makeText(getBaseContext(), parada_cercana, Toast.LENGTH_LONG).show();
             /*
             //no se si este codigo nos sirve a nosotros, los override de abajo tampoco
             runOnUiThread(new Runnable() {
@@ -188,6 +230,9 @@ public class Request extends AppCompatActivity {
             public void onProviderDisabled(String s) {
             }
         };
+
+
+
 
     public JSONArray getLocation(){
         String lat = String.valueOf(latitudeNetwork);
@@ -218,9 +263,36 @@ public class Request extends AppCompatActivity {
 
     };
 
-    public void searchMicro(){
+    public Integer searchMicro(String paradero, String micro) {
+        String url = "http://www.transantiago.cl/predictor/prediccion?codsimt=" + paradero + "&codser=" + micro;
+        Integer distancia;
+        GetRequest getreq = new GetRequest();
+        JSONObject json = null;
+        String result_get = null;
+        try {
+            result_get = getreq.execute(url).get();
+        } catch (InterruptedException e) { } catch (ExecutionException e) { }
+        try {
+            json = new JSONObject(result_get);
+            distancia = json.getJSONObject("servicios").getJSONArray("item").getJSONObject(0).getInt("distanciabus1");
+            return distancia;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return 999999;
+        }
 
     };
+
+    private void VerificarBT() {
+        if (btAdapter == null) {
+            Toast.makeText(getBaseContext(), "El dispositivo no es compatible con bluetooth", Toast.LENGTH_LONG).show();
+        } else {
+            if (!btAdapter.isEnabled()) {
+                Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBT, REQUEST_ENABLE_BT);
+            }
+        }
+    }
 
     public static class GetRequest extends AsyncTask<String, Void, String>
     {
@@ -269,6 +341,91 @@ public class Request extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result){
             super.onPostExecute(result);
+        }
+
+    }
+
+    private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
+        return device.createRfcommSocketToServiceRecord(BTMODULEUUID);
+    }
+
+    private class ConnectedThread extends Thread {
+
+        private final InputStream mmInStream;
+        private final OutputStream mmOutStream;
+
+        public ConnectedThread(BluetoothSocket sock) {
+            InputStream tmpIn = null;
+            OutputStream tmpOut = null;
+            try {
+                tmpIn = sock.getInputStream();
+                tmpOut = sock.getOutputStream();
+            } catch (IOException e) { }
+            mmInStream = tmpIn;
+            mmOutStream = tmpOut;
+        }
+
+        public void run() {
+            byte[] buffer = new byte[256];
+            int bytes;
+
+            while (true) {
+                try {
+                    bytes = mmInStream.read(buffer);
+                    String readMessage = new String(buffer, 0, bytes);
+                    bluetoothIn.obtainMessage(handlerState, bytes, -1, readMessage).sendToTarget();
+                } catch (IOException e) {
+                    break;
+                }
+            }
+        }
+
+        public void write(String input) {
+            try {
+                mmOutStream.write(input.getBytes());
+            } catch (IOException e) {
+                Toast.makeText(getBaseContext(), "La conexión falló", Toast.LENGTH_LONG).show();
+                finish();
+            }
+        }
+
+        public void doble() throws InterruptedException {
+            for(int i = 0; i<2; i++){
+                this.write("A");
+                this.sleep(500);
+                this.write("B");
+                this.sleep(500);
+            }
+        }
+    }
+
+    private class Consultar extends Thread {
+
+        private final String mic;
+        private final Integer distancia_minima;
+
+        public Consultar(String micro) {
+            mic = micro;
+            distancia_minima = 200;
+        }
+
+        public void run() {
+
+            int distance = 99999;
+            while (distance <= distancia_minima) {
+                try {
+                    this.sleep(15000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                distance = searchMicro(parada_cercana, mic);
+                Toast.makeText(getBaseContext(), distance, Toast.LENGTH_LONG);
+            }
+            try {
+                MyConexionBT.doble();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
     }
