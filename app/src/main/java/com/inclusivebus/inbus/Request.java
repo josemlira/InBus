@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -74,7 +75,7 @@ public class Request extends AppCompatActivity {
         txtmicro = (EditText) findViewById(R.id.query_micro);
         bgorec = (Button) findViewById(R.id.button_gorecorrido);
         bback = (Button) findViewById(R.id.button_back);
-        tv_loc = (TextView) findViewById(R.id.tv_loc);
+        tv_loc = (TextView) findViewById(R.id.text_query);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         VerificarBT();
 
@@ -87,6 +88,7 @@ public class Request extends AppCompatActivity {
                 if (isCorrecta(parada_cercana, micro)) {
                     Cons = new Consultar(micro);
                     Cons.start();
+                    Cons.consult();
                 } else {
                     Toast.makeText(getBaseContext(), "La micro indicada no pasa por este paradero", Toast.LENGTH_LONG).show();
                 }
@@ -429,6 +431,7 @@ public class Request extends AppCompatActivity {
 
         private final String mic;
         private final Integer distancia_minima;
+        private boolean activo = true;
 
         public Consultar(String micro) {
             mic = micro;
@@ -436,11 +439,15 @@ public class Request extends AppCompatActivity {
         }
 
         public void run() {
+            while (activo) {
+
+            }
+            /*
             int distance = searchMicro(parada_cercana, mic);
             boolean work = (distance != 999999);
-            while (distance <= distancia_minima) {
+            while (distance > distancia_minima) {
                 try {
-                    this.sleep(5000);
+                    sleep(5000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -455,7 +462,27 @@ public class Request extends AppCompatActivity {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+            } */
+        }
+
+        public void consult() {
+            int distance = searchMicro(parada_cercana, mic);
+            if (distance == 999999) {
+                return;
             }
+            Log.d("HOLA","hola");
+            while (distance > distancia_minima) {
+                try {
+                    sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                distance = searchMicro(parada_cercana, mic);
+            }
+            try {
+                MyConexionBT.doble();
+                activo = false;
+            } catch (InterruptedException e) { }
         }
 
     }
