@@ -82,9 +82,14 @@ public class Request extends AppCompatActivity {
         bgorec.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                parada_cercana = "PA343";
                 micro = txtmicro.getText().toString();
-                Cons = new Consultar(micro);
-                Cons.start();
+                if (isCorrecta(parada_cercana, micro)) {
+                    Cons = new Consultar(micro);
+                    Cons.start();
+                } else {
+                    Toast.makeText(getBaseContext(), "La micro indicada no pasa por este paradero", Toast.LENGTH_LONG).show();
+                }
                 txtmicro.setText("");
             }
         });
@@ -134,7 +139,6 @@ public class Request extends AppCompatActivity {
             btSocket.close();
         } catch (IOException e) { }
     }
-
 
     //probar que esta activada la localización
     private boolean checkLocation() {
@@ -231,9 +235,6 @@ public class Request extends AppCompatActivity {
             }
         };
 
-
-
-
     public JSONArray getLocation(){
         String lat = String.valueOf(latitudeNetwork);
         String lon = String.valueOf(longitudeNetwork);
@@ -267,7 +268,7 @@ public class Request extends AppCompatActivity {
         String url = "http://www.transantiago.cl/predictor/prediccion?codsimt=" + paradero + "&codser=" + micro;
         Integer distancia;
         GetRequest getreq = new GetRequest();
-        JSONObject json = null;
+        JSONObject json;
         String result_get = null;
         try {
             result_get = getreq.execute(url).get();
@@ -282,6 +283,31 @@ public class Request extends AppCompatActivity {
         }
 
     };
+
+    public boolean isCorrecta(String paradero, String micro) {
+        String url = "http://www.transantiago.cl/restservice/rest/getservicios/parada?codsimt=" + paradero;
+        GetRequest getreq = new GetRequest();
+        JSONArray array;
+        boolean correct = false;
+        String result_get = null;
+        try {
+            result_get = getreq.execute(url).get();
+        } catch (InterruptedException e) { } catch (ExecutionException e) { }
+        //Toast.makeText(getBaseContext(),result_get, Toast.LENGTH_LONG).show();
+        try {
+            array = new JSONArray(result_get);
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject ii = array.getJSONObject(i);
+                if (ii.getString("cod").equals(micro)) {
+                    correct = true;
+                }
+            }
+            return correct;
+        } catch (JSONException e) {
+            return correct;
+        }
+
+    }
 
     private void VerificarBT() {
         if (btAdapter == null) {
@@ -410,21 +436,25 @@ public class Request extends AppCompatActivity {
         }
 
         public void run() {
-
-            int distance = 99999;
+            int distance = searchMicro(parada_cercana, mic);
+            boolean work = (distance != 999999);
             while (distance <= distancia_minima) {
                 try {
-                    this.sleep(15000);
+                    this.sleep(5000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 distance = searchMicro(parada_cercana, mic);
-                Toast.makeText(getBaseContext(), distance, Toast.LENGTH_LONG);
+                Toast.makeText(getBaseContext(), distance, Toast.LENGTH_LONG).show();
             }
-            try {
-                MyConexionBT.doble();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (!work) {
+                Toast.makeText(getBaseContext(), "Hubo un problema", Toast.LENGTH_LONG);
+            } else {
+                try {
+                    MyConexionBT.doble();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
