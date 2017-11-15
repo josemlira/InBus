@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewDebug;
 import android.widget.Button;
 import android.widget.EditText;
 import android.content.Context;
@@ -64,7 +65,7 @@ public class Request extends AppCompatActivity {
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
     private int REQUEST_ENABLE_BT = 1;
-    Consultar Cons;
+    private Consultar Cons;
 
 
     @Override
@@ -435,7 +436,7 @@ public class Request extends AppCompatActivity {
 
         public Consultar(String micro) {
             mic = micro;
-            distancia_minima = 200;
+            distancia_minima = 500;
         }
 
         public void run() {
@@ -470,7 +471,6 @@ public class Request extends AppCompatActivity {
             if (distance == 999999) {
                 return;
             }
-            Log.d("HOLA","hola");
             while (distance > distancia_minima) {
                 try {
                     sleep(5000);
