@@ -110,13 +110,12 @@ public class Request extends AppCompatActivity {
                     progress = new ProgressDialog(Request.this);
                     progress.setTitle("Esperando bus " + micro);
                     progress.setCancelable(false);
-                    progress.setMessage("hola");
                     progress.show();
                     /*
                     Consultar Cons = new Consultar(micro);
                     Cons.start();
                     */
-                    Timer timer = new Timer();
+                    Timer timer = new Timer(true);
                     timer.scheduleAtFixedRate(new Tarea(0), 0, 5000);
                 } else {
                     Toast.makeText(getBaseContext(), "La micro indicada no pasa por este paradero", Toast.LENGTH_SHORT).show();
@@ -321,6 +320,7 @@ public class Request extends AppCompatActivity {
             return 999999;
         }
 
+
     };
 
     public boolean isCorrecta(String paradero, String micro) {
@@ -467,6 +467,7 @@ public class Request extends AppCompatActivity {
         @Override
         public void run() {
             distance = searchMicro(parada_cercana, micro);
+            distance = 499;
             if (distance == 999999) {
                 Request.this.runOnUiThread(new Runnable() {
                     @Override
@@ -502,12 +503,13 @@ public class Request extends AppCompatActivity {
 
         public Reconnect(Integer buff) {
             buffer = buff;
+            this.setDaemon(true);
         }
 
         public void run() {
             try {
                 this.sleep(7000);
-                Timer tim = new Timer();
+                Timer tim = new Timer(true);
                 tim.scheduleAtFixedRate(new Tarea(buffer), 0, 5000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -526,11 +528,15 @@ public class Request extends AppCompatActivity {
                 for (int i = 0; i < 2; i++) {
                     MyConexionBT.write("A");
                     this.sleep(500);
-                    MyConexionBT.write("A");
+                    MyConexionBT.write("B");
                     this.sleep(500);
                 }
-                bgorec.setEnabled(true);
-                //progress.dismiss();
+                Request.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        bgorec.setEnabled(true);
+                    }
+                });
             } catch (InterruptedException e) { } catch (ConnectException e) {
                 Request.this.runOnUiThread(new Runnable() {
                     @Override
@@ -539,7 +545,6 @@ public class Request extends AppCompatActivity {
                     }
                 });
                 success = false;
-                //progress.dismiss();
                 Intent again = new Intent(Request.this, MainActivity.class);
                 startActivity(again);
                 finish();

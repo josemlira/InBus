@@ -1,5 +1,6 @@
 package com.inclusivebus.inbus;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     public static String EXTRA_DEVICE_ADDRESS = "device_address";
     public static String VOICE_ACTIVE = "active_voice";
     private TextToSpeech tts;
+    private int MY_DATA_CHECK_CODE = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
                         String info = items[i].toString();
                         String address = info.substring(info.length() - 17);
                         Intent try_connect = new Intent(MainActivity.this, Intermediate.class);
-                        Toast msg = Toast.makeText(getApplicationContext(), "Vinculando con el dispositivo", Toast.LENGTH_SHORT);
+                        Toast msg = Toast.makeText(getApplicationContext(), "Iniciando", Toast.LENGTH_SHORT);
                         msg.show();
                         try_connect.putExtra(EXTRA_DEVICE_ADDRESS, address);
                         startActivity(try_connect);
@@ -96,4 +99,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+    
 }
