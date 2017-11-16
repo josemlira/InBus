@@ -467,7 +467,6 @@ public class Request extends AppCompatActivity {
         @Override
         public void run() {
             distance = searchMicro(parada_cercana, micro);
-            distance = 499;
             if (distance == 999999) {
                 Request.this.runOnUiThread(new Runnable() {
                     @Override
