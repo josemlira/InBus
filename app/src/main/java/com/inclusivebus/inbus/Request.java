@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.ActivityNotFoundException;
 import android.content.pm.PackageManager;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.speech.RecognizerIntent;
@@ -46,6 +47,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -103,17 +106,21 @@ public class Request extends AppCompatActivity {
                 parada_cercana = "PA343";
                 micro = txtmicro.getText().toString();
                 if (isCorrecta(parada_cercana, micro)) {
+                    bgorec.setEnabled(false);
                     progress = new ProgressDialog(Request.this);
                     progress.setTitle("Esperando bus " + micro);
                     progress.setCancelable(false);
                     progress.setMessage("hola");
                     progress.show();
+                    /*
                     Consultar Cons = new Consultar(micro);
                     Cons.start();
+                    */
+                    Timer timer = new Timer();
+                    timer.scheduleAtFixedRate(new Tarea(0), 0, 5000);
                 } else {
                     Toast.makeText(getBaseContext(), "La micro indicada no pasa por este paradero", Toast.LENGTH_SHORT).show();
                 }
-                bgorec.setEnabled(false);
                 txtmicro.setText("");
             }
         });
@@ -294,9 +301,9 @@ public class Request extends AppCompatActivity {
     };
 
     public Integer searchMicro(String paradero, String micro) {
-        String url = "http://www.transantiago.cl/predictor/prediccion?codsimt=" + paradero + "&codser=" + micro;
-        Integer distancia;
-        GetRequest getreq = new GetRequest();
+        String url = "http://www.transantiago.cl/predictor/prediccion?codsimt=" + paradero + "&codser=" + micro; //NO
+        Integer distancia; //NO
+        GetRequest getreq = new GetRequest(); //NO
         JSONObject json;
         String result_get = null;
         try {
@@ -305,7 +312,9 @@ public class Request extends AppCompatActivity {
         try {
             json = new JSONObject(result_get);
             distancia = json.getJSONObject("servicios").getJSONArray("item").getJSONObject(0).getInt("distanciabus1");
-            distancia = 501;
+            if (distancia == 0) {
+                return 999999;
+            }
             return distancia;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -445,6 +454,110 @@ public class Request extends AppCompatActivity {
         }
     }
 
+
+    private class Tarea extends TimerTask {
+        int distance;
+        int distancia_minima = 500;
+        int buffer;
+
+        public Tarea(Integer buf) {
+            buffer = buf;
+        }
+
+        @Override
+        public void run() {
+            distance = searchMicro(parada_cercana, micro);
+            if (distance == 999999) {
+                Request.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        progress.setMessage("Distancia: " + String.valueOf(buffer) + " (conectando)");
+                    }
+                });
+                Reconnect other_thread = new Reconnect(buffer);
+                other_thread.start();
+                this.cancel();
+            } else if (distance <= distancia_minima) {
+                Vibrar vib = new Vibrar();
+                vib.start();
+                progress.dismiss();
+                this.cancel();
+            } else {
+                Request.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        progress.setMessage("Distancia: " + String.valueOf(distance));
+                    }
+                });
+                buffer = distance;
+            }
+        }
+    }
+
+
+
+    private class Reconnect extends Thread {
+
+        int buffer;
+
+        public Reconnect(Integer buff) {
+            buffer = buff;
+        }
+
+        public void run() {
+            try {
+                this.sleep(7000);
+                Timer tim = new Timer();
+                tim.scheduleAtFixedRate(new Tarea(buffer), 0, 5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+
+    private class Vibrar extends Thread {
+
+        private boolean success = true;
+
+        public void run() {
+            try {
+                for (int i = 0; i < 2; i++) {
+                    MyConexionBT.write("A");
+                    this.sleep(500);
+                    MyConexionBT.write("A");
+                    this.sleep(500);
+                }
+                bgorec.setEnabled(true);
+                //progress.dismiss();
+            } catch (InterruptedException e) { } catch (ConnectException e) {
+                Request.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(),"La conexión falló", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                success = false;
+                //progress.dismiss();
+                Intent again = new Intent(Request.this, MainActivity.class);
+                startActivity(again);
+                finish();
+            } finally {
+                if (success) {
+                    Request.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Ha llegado tu bus", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+
+    /*
     private class Consultar extends Thread {
 
         private final String mic;
@@ -524,7 +637,7 @@ public class Request extends AppCompatActivity {
                 }
             }
         }
-    }
+    } */
 
     private void promptSpeechInput() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
