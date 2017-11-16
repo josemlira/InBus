@@ -71,4 +71,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/query_micro" />
 
+    <ImageButton
+        android:id="@+id/mic"
+        android:layout_width="103dp"
+        android:layout_height="88dp"
+        android:background="@null"
+        app:srcCompat="@android:drawable/ic_btn_speak_now"
+        tools:layout_editor_absoluteX="141dp"
+        tools:layout_editor_absoluteY="281dp" />
+
 </android.support.constraint.ConstraintLayout>

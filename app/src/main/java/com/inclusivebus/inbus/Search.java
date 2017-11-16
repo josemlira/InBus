@@ -75,11 +75,10 @@ public class Search extends AppCompatActivity {
         Intent intent = getIntent();
         address = intent.getStringExtra(MainActivity.EXTRA_DEVICE_ADDRESS);
         BluetoothDevice device = btAdapter.getRemoteDevice(address);
-
         try {
             btSocket = createBluetoothSocket(device);
         } catch (IOException e) {
-            Toast.makeText(getBaseContext(), "Hubo un problema", Toast.LENGTH_LONG).show();
+            Toast.makeText(getBaseContext(), "Hubo un problema", Toast.LENGTH_SHORT).show();
         }
         try {
             btSocket.connect();
@@ -88,8 +87,14 @@ public class Search extends AppCompatActivity {
                 btSocket.close();
             } catch (IOException e2) { }
         }
+        if (btSocket != null) {
+            MyConexionBT = new ConnectedThread(btSocket);
+            MyConexionBT.start();
+        }
+        /*
         MyConexionBT = new ConnectedThread(btSocket);
         MyConexionBT.start();
+        */
     }
 
     public void onPause() {
@@ -101,7 +106,7 @@ public class Search extends AppCompatActivity {
 
     private void VerificarBT() {
         if (btAdapter == null) {
-            Toast.makeText(getBaseContext(), "El dispositivo no es compatible con bluetooth", Toast.LENGTH_LONG).show();
+            Toast.makeText(getBaseContext(), "El dispositivo no es compatible con bluetooth", Toast.LENGTH_SHORT).show();
         } else {
             if (!btAdapter.isEnabled()) {
                 Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -146,7 +151,9 @@ public class Search extends AppCompatActivity {
             try {
                 mmOutStream.write(input.getBytes());
             } catch (IOException e) {
-                Toast.makeText(getBaseContext(), "La conexión falló", Toast.LENGTH_LONG).show();
+                Toast.makeText(getBaseContext(), "La conexión falló", Toast.LENGTH_SHORT).show();
+                Intent again = new Intent(Search.this, MainActivity.class);
+                startActivity(again);
                 finish();
             }
         }

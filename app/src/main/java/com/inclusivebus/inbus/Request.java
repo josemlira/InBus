@@ -1,12 +1,15 @@
 package com.inclusivebus.inbus;
 
 
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.ActivityNotFoundException;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.speech.RecognizerIntent;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,6 +27,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,8 +41,11 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -65,7 +72,9 @@ public class Request extends AppCompatActivity {
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
     private int REQUEST_ENABLE_BT = 1;
-    private Consultar Cons;
+    private final int REQ_CODE_SPEECH_INPUT = 100;
+    private ImageButton btnSpeak;
+    private ProgressDialog progress;
 
 
     @Override
@@ -73,12 +82,19 @@ public class Request extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_request);
 
+        //getActionBar().hide(); esconde la barra de arriba de la app
         txtmicro = (EditText) findViewById(R.id.query_micro);
         bgorec = (Button) findViewById(R.id.button_gorecorrido);
         bback = (Button) findViewById(R.id.button_back);
         tv_loc = (TextView) findViewById(R.id.text_query);
+        btnSpeak = (ImageButton) findViewById(R.id.mic);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         VerificarBT();
+
+        //Toast.makeText(getApplicationContext(), "HOLA", Toast.LENGTH_SHORT).show();
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        toggleNetworkUpdates();
+        //getLocation();
 
         //boton para leer la micro
         bgorec.setOnClickListener(new View.OnClickListener() {
@@ -87,19 +103,20 @@ public class Request extends AppCompatActivity {
                 parada_cercana = "PA343";
                 micro = txtmicro.getText().toString();
                 if (isCorrecta(parada_cercana, micro)) {
-                    Cons = new Consultar(micro);
+                    progress = new ProgressDialog(Request.this);
+                    progress.setTitle("Esperando bus " + micro);
+                    progress.setCancelable(false);
+                    progress.setMessage("hola");
+                    progress.show();
+                    Consultar Cons = new Consultar(micro);
                     Cons.start();
-                    Cons.consult();
                 } else {
-                    Toast.makeText(getBaseContext(), "La micro indicada no pasa por este paradero", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getBaseContext(), "La micro indicada no pasa por este paradero", Toast.LENGTH_SHORT).show();
                 }
+                bgorec.setEnabled(false);
                 txtmicro.setText("");
             }
         });
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        toggleNetworkUpdates();
-        //getLocation();
-
 
         //boton para volver
         bback.setOnClickListener(new View.OnClickListener() {
@@ -109,6 +126,13 @@ public class Request extends AppCompatActivity {
                 go.putExtra(MainActivity.EXTRA_DEVICE_ADDRESS, address);
                 startActivity(go);
                 finish();
+            }
+        });
+
+        btnSpeak.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                promptSpeechInput();
             }
         });
 
@@ -123,7 +147,7 @@ public class Request extends AppCompatActivity {
         try {
             btSocket = createBluetoothSocket(device);
         } catch (IOException e) {
-            Toast.makeText(getBaseContext(), "Hubo un problema", Toast.LENGTH_LONG).show();
+            Toast.makeText(getBaseContext(), "Hubo un problema", Toast.LENGTH_SHORT).show();
         }
         try {
             btSocket.connect();
@@ -132,8 +156,10 @@ public class Request extends AppCompatActivity {
                 btSocket.close();
             } catch (IOException e2) { }
         }
-        MyConexionBT = new ConnectedThread(btSocket);
-        MyConexionBT.start();
+        if (btSocket != null) {
+            MyConexionBT = new ConnectedThread(btSocket);
+            MyConexionBT.start();
+        }
     }
 
     public void onPause() {
@@ -183,9 +209,9 @@ public class Request extends AppCompatActivity {
             } else {
                 locationManager.requestLocationUpdates(
                         LocationManager.NETWORK_PROVIDER, 20 * 1000, 10, locationListenerNetwork);
-                //Toast.makeText(this, "Network provider started running", Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, "Network provider started running", Toast.LENGTH_SHORT).show();
                 //String lat = String.valueOf(latitudeNetwork);
-                Toast.makeText(getBaseContext(), parada_cercana, Toast.LENGTH_LONG).show();
+                Toast.makeText(getBaseContext(), parada_cercana, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -213,7 +239,7 @@ public class Request extends AppCompatActivity {
                 }
             }
             parada_cercana = aux;
-            //Toast.makeText(getBaseContext(), parada_cercana, Toast.LENGTH_LONG).show();
+            //Toast.makeText(getBaseContext(), parada_cercana, Toast.LENGTH_SHORT).show();
             /*
             //no se si este codigo nos sirve a nosotros, los override de abajo tampoco
             runOnUiThread(new Runnable() {
@@ -249,7 +275,7 @@ public class Request extends AppCompatActivity {
 
         try {
             resultado_paradero = getreq.execute(URL_paradero).get();
-            //Toast.makeText(getBaseContext(),resultado_paradero,Toast.LENGTH_LONG).show();
+            //Toast.makeText(getBaseContext(),resultado_paradero,Toast.LENGTH_SHORT).show();
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -279,6 +305,7 @@ public class Request extends AppCompatActivity {
         try {
             json = new JSONObject(result_get);
             distancia = json.getJSONObject("servicios").getJSONArray("item").getJSONObject(0).getInt("distanciabus1");
+            distancia = 501;
             return distancia;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -296,7 +323,7 @@ public class Request extends AppCompatActivity {
         try {
             result_get = getreq.execute(url).get();
         } catch (InterruptedException e) { } catch (ExecutionException e) { }
-        //Toast.makeText(getBaseContext(),result_get, Toast.LENGTH_LONG).show();
+        //Toast.makeText(getBaseContext(),result_get, Toast.LENGTH_SHORT).show();
         try {
             array = new JSONArray(result_get);
             for (int i = 0; i < array.length(); i++) {
@@ -314,7 +341,7 @@ public class Request extends AppCompatActivity {
 
     private void VerificarBT() {
         if (btAdapter == null) {
-            Toast.makeText(getBaseContext(), "El dispositivo no es compatible con bluetooth", Toast.LENGTH_LONG).show();
+            Toast.makeText(getBaseContext(), "El dispositivo no es compatible con bluetooth", Toast.LENGTH_SHORT).show();
         } else {
             if (!btAdapter.isEnabled()) {
                 Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -409,21 +436,11 @@ public class Request extends AppCompatActivity {
             }
         }
 
-        public void write(String input) {
+        public void write(String input) throws ConnectException {
             try {
                 mmOutStream.write(input.getBytes());
             } catch (IOException e) {
-                Toast.makeText(getBaseContext(), "La conexión falló", Toast.LENGTH_LONG).show();
-                finish();
-            }
-        }
-
-        public void doble() throws InterruptedException {
-            for(int i = 0; i<2; i++){
-                this.write("A");
-                this.sleep(500);
-                this.write("B");
-                this.sleep(500);
+                throw new ConnectException("Fallo");
             }
         }
     }
@@ -432,59 +449,106 @@ public class Request extends AppCompatActivity {
 
         private final String mic;
         private final Integer distancia_minima;
-        private boolean activo = true;
+        private int distance;
+        private boolean success = true;
 
         public Consultar(String micro) {
             mic = micro;
             distancia_minima = 500;
         }
 
-        public void run() {
-            while (activo) {
+        class Correr implements Runnable {
 
+            final private int val;
+
+            public Correr(Integer value) {
+                val = value;
             }
-            /*
-            int distance = searchMicro(parada_cercana, mic);
-            boolean work = (distance != 999999);
-            while (distance > distancia_minima) {
-                try {
-                    sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                distance = searchMicro(parada_cercana, mic);
-                Toast.makeText(getBaseContext(), distance, Toast.LENGTH_LONG).show();
+            public void run() {
+                progress.setMessage(String.valueOf(val));
             }
-            if (!work) {
-                Toast.makeText(getBaseContext(), "Hubo un problema", Toast.LENGTH_LONG);
-            } else {
-                try {
-                    MyConexionBT.doble();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            } */
         }
 
-        public void consult() {
-            int distance = searchMicro(parada_cercana, mic);
+        public void run() {
+            distance = searchMicro(parada_cercana, mic);
             if (distance == 999999) {
+                Request.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getBaseContext(), "No hay micro", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                progress.dismiss();
                 return;
             }
+            int v = 1;
             while (distance > distancia_minima) {
                 try {
-                    sleep(5000);
+                    this.sleep(2000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 distance = searchMicro(parada_cercana, mic);
+                Request.this.runOnUiThread(new Correr(v));
+                v++;
             }
             try {
-                MyConexionBT.doble();
-                activo = false;
-            } catch (InterruptedException e) { }
+                for (int i = 0; i<2; i++) {
+                    MyConexionBT.write("A");
+                    this.sleep(500);
+                    MyConexionBT.write("B");
+                    this.sleep(500);
+                }
+                bgorec.setEnabled(true);
+                progress.dismiss();
+            } catch (InterruptedException e) { } catch (ConnectException e) {
+                Request.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(),"La conexión falló", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                success = false;
+                progress.dismiss();
+                Intent again = new Intent(Request.this, MainActivity.class);
+                startActivity(again);
+                finish();
+            } finally {
+                if (success) {
+                    Request.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Ha llegado tu bus", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
         }
+    }
 
+    private void promptSpeechInput() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Habla ...");
+        try {
+            startActivityForResult(intent, REQ_CODE_SPEECH_INPUT);
+        } catch (ActivityNotFoundException a) {
+            Toast.makeText(getApplicationContext(), "Tu dispositivo no soporta lector de voz", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode) {
+            case REQ_CODE_SPEECH_INPUT: {
+                if ((resultCode == RESULT_OK) && (data != null)) {
+                    ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    txtmicro.setText(result.get(0).replace(" ",""));
+                }
+            }
+        }
     }
 }
 

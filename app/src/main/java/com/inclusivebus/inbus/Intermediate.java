@@ -1,5 +1,6 @@
 package com.inclusivebus.inbus;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ public class Intermediate extends AppCompatActivity {
         btest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                ProgressDialog.show(Intermediate.this, "Conectando ...", "Por favor espere", true, false);
                 Intent go = new Intent(Intermediate.this, Search.class);
                 go.putExtra(MainActivity.EXTRA_DEVICE_ADDRESS, address);
                 startActivity(go);
@@ -34,8 +36,8 @@ public class Intermediate extends AppCompatActivity {
         bapp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                ProgressDialog.show(Intermediate.this, "Conectando ...", "Por favor espere", true, false);
                 Intent go = new Intent(Intermediate.this, Request.class);
-                // Esto es para pasar la dirección MAC del dispositivo con el que nos estamos conectando al otro layout
                 go.putExtra(MainActivity.EXTRA_DEVICE_ADDRESS, address);
                 startActivity(go);
                 finish();
