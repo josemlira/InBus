@@ -13,6 +13,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -75,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
         caption.show();
     }
 
-    //REVISAR ESTO, NO ESTA CORRIENDO
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -85,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
 
     private void VerificarBT() {
         if (btAdapter == null) {
@@ -99,5 +101,4 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
 }

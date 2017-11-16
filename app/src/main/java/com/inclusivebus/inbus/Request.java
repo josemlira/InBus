@@ -457,7 +457,7 @@ public class Request extends AppCompatActivity {
 
     private class Tarea extends TimerTask {
         int distance;
-        int distancia_minima = 500;
+        int distancia_minima = 300;
         int buffer;
 
         public Tarea(Integer buf) {
